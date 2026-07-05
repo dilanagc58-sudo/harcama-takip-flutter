@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'auth_sayfasi.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Supabase.initialize(
-  url: String.fromEnvironment('SUPABASE_URL'),
-  anonKey: String.fromEnvironment('SUPABASE_ANON_KEY'),
+  url: const String.fromEnvironment('SUPABASE_URL'),
+  anonKey: const String.fromEnvironment('SUPABASE_ANON_KEY'),
 );
   runApp(const MyApp());
 }
@@ -18,12 +19,23 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Harcama Takip',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
         scaffoldBackgroundColor: const Color(0xFFF0F2F5),
         fontFamily: 'Roboto',
       ),
-      home: const HarcamaSayfasi(),
+      home: StreamBuilder<AuthState>(
+        stream: Supabase.instance.client.auth.onAuthStateChange,
+        builder: (context, snapshot) {
+          final session = Supabase.instance.client.auth.currentSession;
+          if (session != null) {
+            return const HarcamaSayfasi();
+          } else {
+            return const AuthSayfasi();
+          }
+        },
+      ),
     );
   }
 }
@@ -50,14 +62,17 @@ void initState() {
   static const Color koyuYazi = Color(0xFF1A1A2E);
   static const Color kirmizi = Color(0xFFE53E3E);
 
- Future<void> harcamaEkle() async {
+Future<void> harcamaEkle() async {
   if (kategoriController.text.isEmpty || tutarController.text.isEmpty) {
     return;
   }
 
+  final kullaniciId = supabase.auth.currentUser!.id;
+
   final yeniHarcama = {
     "kategori": kategoriController.text,
     "tutar": double.parse(tutarController.text),
+    "user_id": kullaniciId,
   };
 
   try {
@@ -112,8 +127,25 @@ Future<void> verileriYukle() async {
       toplam += harcama["tutar"];
     }
 
-    return Scaffold(
-      body: Column(
+   return Scaffold(
+  appBar: AppBar(
+    backgroundColor: Colors.white,
+    elevation: 0,
+    title: const Text(
+      'Harcama Takip',
+      style: TextStyle(color: koyuYazi, fontWeight: FontWeight.bold),
+    ),
+    actions: [
+      IconButton(
+        icon: const Icon(Icons.logout_rounded, color: kirmizi),
+        tooltip: 'Çıkış Yap',
+        onPressed: () async {
+          await supabase.auth.signOut();
+        },
+      ),
+    ],
+  ),
+  body: Column(
         children: [
           Container(
             width: double.infinity,
