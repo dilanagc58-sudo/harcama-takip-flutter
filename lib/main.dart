@@ -4,9 +4,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Supabase.initialize(
-    url: 'https://axbgpbaegsgynswysbuf.supabase.co',
-    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF4YmdwYmFlZ3NneW5zd3lzYnVmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMxODU3NTEsImV4cCI6MjA5ODc2MTc1MX0.Henu1zn1q1LqMIdggwKlw82m63b5NLLKjEXQ2aCvfJg',
-  );
+  url: String.fromEnvironment('SUPABASE_URL'),
+  anonKey: String.fromEnvironment('SUPABASE_ANON_KEY'),
+);
   runApp(const MyApp());
 }
 
